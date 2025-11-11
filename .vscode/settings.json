@@ -1,4 +1,5 @@
 {
+    "editor.detectIndentation": true,
     "[json]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },

@@ -2,6 +2,12 @@
   "name": "42bot",
   "version": "1.0.0",
   "author": "Raraph84",
+  "scripts": {
+    "start": "node index.js",
+    "build": "tsc",
+    "dev": "tsx index.ts",
+    "format": "prettier --write **/*.{ts,json}"
+  },
   "dependencies": {
     "@types/node": "^24.10.0",
     "discord.js": "^14.24.2",

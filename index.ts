@@ -1,5 +1,6 @@
 import discord from "discord.js";
 import mysql2 from "mysql2/promise";
+import express from "express";
 import dotenv from "dotenv";
 
 dotenv.config({ quiet: true });
@@ -22,6 +23,16 @@ bot.login(process.env.BOT_TOKEN)
     .then(() => console.log("Connected to the bot."))
     .catch((error) => console.error("Failed to connect to the bot:", error));
 
-bot.on("clientReady", () => {
+bot.on("clientReady", async () => {
+    await bot.user!.setPresence({
+        activities: [{ name: "Regarde les echecs de Libft." }]
+    });
+    await (await import("./src/slashCommands.js")).run(bot);
     console.log("The bot is ready.");
+    console.log("I am in", bot.guilds.cache.size, "servers!");
+});
+
+const api = express();
+api.listen(4000, () => {
+    console.log("HTTP server listening on port 4000.");
 });

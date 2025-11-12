@@ -33,6 +33,5 @@ bot.on("clientReady", async () => {
 });
 
 const api = express();
-api.listen(4000, () => {
-    console.log("HTTP server listening on port 4000.");
-});
+api.get("/callback", (req, res) => import("./src/link.js").then((module) => module.request(req, res, database)));
+api.listen(4000, () => console.log("HTTP server listening on port 4000."));

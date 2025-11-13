@@ -1,6 +1,7 @@
 import { ApplicationCommandType, Client } from "discord.js";
+import { Pool } from "mysql2/promise";
 
-export const run = async (bot: Client): Promise<void> => {
+export const run = async (bot: Client, database: Pool): Promise<void> => {
     await bot.application!.commands.set([
         {
             name: "ping",
@@ -11,6 +12,11 @@ export const run = async (bot: Client): Promise<void> => {
             name: "link",
             description: "Relie votre compte Discord à votre compte 42.",
             type: ApplicationCommandType.ChatInput
+        },
+        {
+            name: "unlink",
+            description: "Délie votre compte Discord de votre compte 42.",
+            type: ApplicationCommandType.ChatInput
         }
     ]);
 
@@ -18,6 +24,7 @@ export const run = async (bot: Client): Promise<void> => {
         if (!interaction.isChatInputCommand()) return;
 
         if (interaction.commandName === "ping") interaction.reply("Pong !");
-        else if (interaction.commandName === "link") import("./link.js").then((module) => module.command(interaction));
+        else if (interaction.commandName === "link" || interaction.commandName === "unlink")
+            import("./link.js").then((module) => module.command(interaction, database));
     });
 };

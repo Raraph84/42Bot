@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { Request, Response } from "express";
-import { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import { Pool, RowDataPacket } from "mysql2/promise";
 import { randomString } from "./utils.js";
 import * as intra from "./42api.js";
 
@@ -8,18 +8,66 @@ const CALLBACK_URL = "https://api.raraph.fr/42bot/callback?nonce=";
 
 const links: { userId: string; nonce: string }[] = [];
 
-export const command = (interaction: ChatInputCommandInteraction) => {
-    const oldIndex = links.findIndex((link) => link.userId === interaction.user.id);
-    if (oldIndex !== -1) links.splice(oldIndex, 1);
+export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
+    let oldLinks;
+    try {
+        [oldLinks] = await database.query<RowDataPacket[]>("SELECT * FROM linked_users WHERE discord_user_id=?", [
+            interaction.user.id
+        ]);
+    } catch (error) {
+        console.error("Failed to query database for existing links:", error);
+        interaction.reply({
+            content: "Un problème est survenu.",
+            flags: MessageFlags.Ephemeral
+        });
+        return;
+    }
 
-    const nonce = randomString(16);
-    links.push({ userId: interaction.user.id, nonce });
+    if (interaction.commandName === "link") {
+        if (oldLinks.length) {
+            interaction.reply({
+                content: "Votre compte Discord est déjà lié à un compte 42 !",
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
 
-    const url = intra.getOauthUrl(CALLBACK_URL + nonce);
-    interaction.reply({
-        content: "Veuillez visiter le lien suivant pour lier votre compte :\n" + url,
-        flags: MessageFlags.Ephemeral
-    });
+        const oldIndex = links.findIndex((link) => link.userId === interaction.user.id);
+        if (oldIndex !== -1) links.splice(oldIndex, 1);
+
+        const nonce = randomString(16);
+        links.push({ userId: interaction.user.id, nonce });
+
+        const url = intra.getOauthUrl(CALLBACK_URL + nonce);
+        interaction.reply({
+            content: "Veuillez visiter le lien suivant pour lier votre compte :\n" + url,
+            flags: MessageFlags.Ephemeral
+        });
+    } else {
+        if (!oldLinks.length) {
+            interaction.reply({
+                content: "Votre compte Discord n'est pas lié à un compte 42 !",
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+
+        try {
+            await database.execute("DELETE FROM linked_users WHERE discord_user_id=?", [interaction.user.id]);
+        } catch (error) {
+            console.error("Failed to delete link from database:", error);
+            interaction.reply({
+                content: "Un problème est survenu.",
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+
+        interaction.reply({
+            content: "Votre compte Discord a bien été délié de votre compte 42 !",
+            flags: MessageFlags.Ephemeral
+        });
+    }
 };
 
 export const request = async (req: Request, res: Response, database: Pool) => {

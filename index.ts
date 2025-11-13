@@ -27,7 +27,7 @@ bot.on("clientReady", async () => {
     await bot.user!.setPresence({
         activities: [{ name: "Regarde les echecs de Libft." }]
     });
-    await (await import("./src/slashCommands.js")).run(bot);
+    await (await import("./src/slashCommands.js")).run(bot, database);
     console.log("The bot is ready.");
     console.log("I am in", bot.guilds.cache.size, "servers!");
 });

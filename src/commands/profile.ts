@@ -2,6 +2,7 @@ import {
     ActionRowBuilder,
     ChatInputCommandInteraction,
     EmbedBuilder,
+    MessageFlags,
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder
 } from "discord.js";
@@ -65,13 +66,14 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             `**Piscine :** ${months[user.pool_month]} ${user.pool_year}`,
             `**Campus :** ${user.campus.map((c: any) => c.name).join(", ")}`
         ];
-        console.dir(user, { depth: null });
         if (user.location) description.push(`**Position :** ${user.location}`);
         if (cursusId) {
             const cursus = user.cursus_users.find((c: any) => c.cursus.id === cursusId);
             const projects = user.projects_users.filter((p: any) => p.cursus_ids.includes(cursusId));
             const currentProjects = projects.filter((p: any) => !p.marked);
-            description.push("", `__**Cursus :**__ ${cursus.cursus.name}`, `**Niveau :** ${cursus.level.toFixed(2)}`);
+            description.push("");
+            description.push(`__**Cursus :**__ ${cursus.cursus.name}`);
+            description.push(`**Niveau :** ${cursus.level.toFixed(2)}`);
             if (cursus.grade) description.push(`**Grade :** ${cursus.grade}`);
             description.push(`**Débuté le :** ${moment(cursus.begin_at).format("DD/MM/YYYY")}`);
             if (cursus.end_at) description.push(`**Terminé le :** ${moment(cursus.end_at).format("DD/MM/YYYY")}`);
@@ -85,7 +87,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
                 description.push(
                     `**Projets en cours :** ${currentProjects.map((p: any) => p.project.name).join(", ")}`
                 );
-            // TODO Coalition
+            // TODO Show coalitions
         }
         return {
             embeds: [
@@ -117,7 +119,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     collector.on("collect", async (i) => {
         if (!i.isStringSelectMenu()) return;
         if (i.user.id !== interaction.user.id) {
-            await i.reply({ content: ":x: Ce n'est pas votre profil !", ephemeral: true });
+            await i.reply({ content: ":x: Ce n'est pas votre profil !", flags: MessageFlags.Ephemeral });
             return;
         }
 

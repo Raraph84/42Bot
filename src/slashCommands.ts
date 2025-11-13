@@ -10,12 +10,17 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         },
         {
             name: "link",
-            description: "Relie votre compte Discord à votre compte 42.",
+            description: "Relie votre compte Discord à votre intra 42.",
             type: ApplicationCommandType.ChatInput
         },
         {
             name: "unlink",
-            description: "Délie votre compte Discord de votre compte 42.",
+            description: "Délie votre compte Discord de votre intra 42.",
+            type: ApplicationCommandType.ChatInput
+        },
+        {
+            name: "profile",
+            description: "Affiche votre profil intra 42.",
             type: ApplicationCommandType.ChatInput
         }
     ]);
@@ -28,5 +33,7 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             import("./commands/link.js").then((module) => module.command(interaction, database));
         else if (interaction.commandName === "unlink")
             import("./commands/unlink.js").then((module) => module.command(interaction, database));
+        else if (interaction.commandName === "profile")
+            import("./commands/profile.js").then((module) => module.command(interaction, database));
     });
 };

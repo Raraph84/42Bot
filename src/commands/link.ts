@@ -25,7 +25,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
 
     if (oldLinks.length) {
         interaction.reply({
-            content: ":x: Votre compte Discord est déjà lié à un compte 42 !",
+            content: ":x: Votre compte Discord est déjà lié à votre intra 42 !",
             flags: MessageFlags.Ephemeral
         });
         return;
@@ -81,7 +81,7 @@ export const request = async (req: Request, res: Response, database: Pool) => {
         return;
     }
     if (oldLinks.length) {
-        res.send("Votre compte Discord est déjà lié à un compte 42 !");
+        res.send("Votre compte Discord est déjà lié à votre intra 42 !");
         return;
     }
 
@@ -96,5 +96,5 @@ export const request = async (req: Request, res: Response, database: Pool) => {
         return;
     }
 
-    res.send("Votre compte Discord a bien été lié à votre compte 42, " + user.login + " !");
+    res.send("Votre compte Discord a bien été lié à votre intra 42 !");
 };

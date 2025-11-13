@@ -2,9 +2,9 @@ import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { Pool, RowDataPacket } from "mysql2/promise";
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
-    let oldLinks;
+    let links;
     try {
-        [oldLinks] = await database.query<RowDataPacket[]>("SELECT * FROM linked_users WHERE discord_user_id=?", [
+        [links] = await database.query<RowDataPacket[]>("SELECT * FROM linked_users WHERE discord_user_id=?", [
             interaction.user.id
         ]);
     } catch (error) {
@@ -16,9 +16,9 @@ export const command = async (interaction: ChatInputCommandInteraction, database
         return;
     }
 
-    if (!oldLinks.length) {
+    if (!links.length) {
         interaction.reply({
-            content: ":x: Votre compte Discord n'est pas lié à un compte 42 !",
+            content: ":x: Votre compte Discord n'est pas lié à votre intra 42 !",
             flags: MessageFlags.Ephemeral
         });
         return;
@@ -36,7 +36,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     }
 
     interaction.reply({
-        content: "Votre compte Discord a bien été délié de votre compte 42 !",
+        content: "Votre compte Discord a bien été délié de votre intra 42 !",
         flags: MessageFlags.Ephemeral
     });
 };

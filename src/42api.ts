@@ -21,13 +21,29 @@ const getOauthAppToken = async (): Promise<any> => {
     return await res.json();
 };
 
-export const getOauthToken = async (code: string, redirectUri: string): Promise<string> => {
+export const getOauthToken = async (code: string, redirectUri: string): Promise<any> => {
     const params = new URLSearchParams();
     params.set("grant_type", "authorization_code");
     params.set("client_id", process.env.INTRA_APP_UID!);
     params.set("client_secret", process.env.INTRA_APP_SECRET!);
     params.set("code", code);
     params.set("redirect_uri", redirectUri);
+
+    const res = await fetch("https://api.intra.42.fr/oauth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params
+    });
+    if (!res.ok) throw new Error("42 API error: " + res.status + " " + (await res.text()));
+    return await res.json();
+};
+
+export const refreshOauthToken = async (refreshToken: string): Promise<any> => {
+    const params = new URLSearchParams();
+    params.set("grant_type", "refresh_token");
+    params.set("client_id", process.env.INTRA_APP_UID!);
+    params.set("client_secret", process.env.INTRA_APP_SECRET!);
+    params.set("refresh_token", refreshToken);
 
     const res = await fetch("https://api.intra.42.fr/oauth/token", {
         method: "POST",

@@ -2,6 +2,7 @@ import discord from "discord.js";
 import mysql2 from "mysql2/promise";
 import express from "express";
 import dotenv from "dotenv";
+import * as link from "./src/commands/link.js";
 
 dotenv.config({ quiet: true });
 
@@ -33,5 +34,5 @@ bot.on("clientReady", async () => {
 });
 
 const api = express();
-api.get("/callback", (req, res) => import("./src/link.js").then((module) => module.request(req, res, database)));
+api.get("/callback", (req, res) => link.request(req, res, database));
 api.listen(4000, () => console.log("HTTP server listening on port 4000."));

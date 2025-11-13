@@ -24,7 +24,9 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         if (!interaction.isChatInputCommand()) return;
 
         if (interaction.commandName === "ping") interaction.reply("Pong !");
-        else if (interaction.commandName === "link" || interaction.commandName === "unlink")
-            import("./link.js").then((module) => module.command(interaction, database));
+        else if (interaction.commandName === "link")
+            import("./commands/link.js").then((module) => module.command(interaction, database));
+        else if (interaction.commandName === "unlink")
+            import("./commands/unlink.js").then((module) => module.command(interaction, database));
     });
 };

@@ -92,3 +92,6 @@ const jsonCookiesRequest = (url: string): Promise<any> => cookiesRequest(url).th
 
 export const getUserCoalition = (user: string, cursus: string) =>
     jsonCookiesRequest("https://profile.intra.42.fr/users/" + user + "/coalitions?cursus=" + cursus);
+
+export const getUserLocationsStats = (user: string) =>
+    jsonCookiesRequest("https://translate.intra.42.fr/users/" + user + "/locations_stats");

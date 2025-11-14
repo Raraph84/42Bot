@@ -9,22 +9,8 @@ import {
 import { Pool, RowDataPacket } from "mysql2/promise";
 import * as intra from "../42api.js";
 import * as intraScraper from "../42scraper.js";
+import { months } from "../utils.js";
 import moment from "moment";
-
-const months: { [key: string]: string } = {
-    january: "Janvier",
-    february: "Février",
-    march: "Mars",
-    april: "Avril",
-    may: "Mai",
-    june: "Juin",
-    july: "Juillet",
-    august: "Août",
-    september: "Septembre",
-    october: "Octobre",
-    november: "Novembre",
-    december: "Décembre"
-};
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
     let links;

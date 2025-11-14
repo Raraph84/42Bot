@@ -22,6 +22,11 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             name: "profile",
             description: "Affiche votre profil intra 42.",
             type: ApplicationCommandType.ChatInput
+        },
+        {
+            name: "logtime",
+            description: "Affiche le temps de connexion sur intra 42.",
+            type: ApplicationCommandType.ChatInput
         }
     ]);
 
@@ -35,5 +40,7 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             import("./commands/unlink.js").then((module) => module.command(interaction, database));
         else if (interaction.commandName === "profile")
             import("./commands/profile.js").then((module) => module.command(interaction, database));
+        else if (interaction.commandName === "logtime")
+            import("./commands/logtime.js").then((module) => module.command(interaction, database));
     });
 };

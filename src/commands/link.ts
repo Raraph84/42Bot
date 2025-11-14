@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { Request, Response } from "express";
-import { Pool, RowDataPacket } from "mysql2/promise";
-import { randomString } from "../utils.js";
+import { Pool } from "mysql2/promise";
+import { getUserLink, randomString } from "../utils.js";
 import * as intra from "../42api.js";
 
 const CALLBACK_URL = "https://api.raraph.fr/42bot/callback?nonce=";
@@ -9,21 +9,8 @@ const CALLBACK_URL = "https://api.raraph.fr/42bot/callback?nonce=";
 const links: { userId: string; nonce: string }[] = [];
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
-    let oldLinks;
-    try {
-        [oldLinks] = await database.query<RowDataPacket[]>("SELECT * FROM linked_users WHERE discord_user_id=?", [
-            interaction.user.id
-        ]);
-    } catch (error) {
-        console.error("Database error", error);
-        interaction.reply({
-            content: ":x: Un problème est survenu.",
-            flags: MessageFlags.Ephemeral
-        });
-        return;
-    }
-
-    if (oldLinks.length) {
+    const link = await getUserLink(database, interaction.user.id);
+    if (!link) {
         interaction.reply({
             content: ":x: Votre compte Discord est déjà lié à votre intra 42 !",
             flags: MessageFlags.Ephemeral
@@ -67,21 +54,6 @@ export const request = async (req: Request, res: Response, database: Pool) => {
         user = await intra.getMe(token);
     } catch (error) {
         res.status(500).send("Un problème est survenu.");
-        return;
-    }
-
-    let oldLinks;
-    try {
-        [oldLinks] = await database.query<RowDataPacket[]>("SELECT * FROM linked_users WHERE discord_user_id=?", [
-            link.userId
-        ]);
-    } catch (error) {
-        console.error("Database error", error);
-        res.status(500).send("Un problème est survenu.");
-        return;
-    }
-    if (oldLinks.length) {
-        res.send("Votre compte Discord est déjà lié à votre intra 42 !");
         return;
     }
 

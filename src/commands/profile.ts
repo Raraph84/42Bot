@@ -6,32 +6,22 @@ import {
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder
 } from "discord.js";
-import { Pool, RowDataPacket } from "mysql2/promise";
+import { Pool } from "mysql2/promise";
+import { getUserLink, months } from "../utils.js";
 import * as intra from "../42api.js";
 import * as intraScraper from "../42scraper.js";
-import { months } from "../utils.js";
 import moment from "moment";
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
-    let links;
-    try {
-        [links] = await database.query<RowDataPacket[]>("SELECT * FROM linked_users WHERE discord_user_id=?", [
-            interaction.user.id
-        ]);
-    } catch (error) {
-        console.error("Database error", error);
-        interaction.reply(":x: Un problème est survenu.");
-        return;
-    }
-
-    if (!links.length) {
+    const link = await getUserLink(database, interaction.user.id);
+    if (!link) {
         interaction.reply(":x: Votre compte Discord n'est pas lié à votre intra 42 !");
         return;
     }
 
     await interaction.deferReply();
 
-    const token = await intra.refreshOauthToken(links[0]!.refresh_token);
+    const token = await intra.refreshOauthToken(link.refresh_token);
     try {
         await database.query("UPDATE linked_users SET refresh_token=? WHERE discord_user_id=?", [
             token.refresh_token,

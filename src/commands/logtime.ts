@@ -1,28 +1,18 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import { Pool, RowDataPacket } from "mysql2/promise";
+import { Pool } from "mysql2/promise";
+import { getUserLink, months } from "../utils.js";
 import * as intraScraper from "../42scraper.js";
-import { months } from "../utils.js";
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
-    let links;
-    try {
-        [links] = await database.query<RowDataPacket[]>("SELECT * FROM linked_users WHERE discord_user_id=?", [
-            interaction.user.id
-        ]);
-    } catch (error) {
-        console.error("Database error", error);
-        interaction.reply(":x: Un problème est survenu.");
-        return;
-    }
-
-    if (!links.length) {
+    const link = await getUserLink(database, interaction.user.id);
+    if (!link) {
         interaction.reply(":x: Votre compte Discord n'est pas lié à votre intra 42 !");
         return;
     }
 
     await interaction.deferReply();
 
-    const logtime = await intraScraper.getUserLocationsStats(links[0]!.login);
+    const logtime = await intraScraper.getUserLocationsStats(link.login);
 
     const toSeconds = (time: string): number =>
         parseInt(time.slice(0, 2)) * 60 * 60 + parseInt(time.slice(3, 5)) * 60 + parseInt(time.slice(6, 8));
@@ -55,7 +45,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     interaction.editReply({
         embeds: [
             new EmbedBuilder()
-                .setTitle(`Temps de connexion de ${links[0]!.login}`)
+                .setTitle(`Temps de connexion de ${link.login}`)
                 .setColor(0x0099ff)
                 .setDescription(
                     [

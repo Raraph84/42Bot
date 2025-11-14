@@ -10,7 +10,7 @@ const links: { userId: string; nonce: string }[] = [];
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
     const link = await getUserLink(database, interaction.user.id);
-    if (!link) {
+    if (link) {
         interaction.reply({
             content: ":x: Votre compte Discord est déjà lié à votre intra 42 !",
             flags: MessageFlags.Ephemeral

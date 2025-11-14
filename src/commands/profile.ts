@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import { Pool, RowDataPacket } from "mysql2/promise";
 import * as intra from "../42api.js";
+import * as intraScraper from "../42scraper.js";
 import moment from "moment";
 
 const months: { [key: string]: string } = {
@@ -56,8 +57,9 @@ export const command = async (interaction: ChatInputCommandInteraction, database
         return;
     }
 
+    const user = await intra.getMe(token);
+
     const genMessage = async (cursusId: number | null = null) => {
-        const user = await intra.getMe(token);
         const description = [
             `**Cursus :** ${user.cursus_users.map((c: any) => c.cursus.name).join(", ")}`,
             `**Points d'évaluation :** ${user.correction_point}`,
@@ -66,9 +68,11 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             `**Piscine :** ${months[user.pool_month]} ${user.pool_year}`,
             `**Campus :** ${user.campus.map((c: any) => c.name).join(", ")}`
         ];
+        let color = null;
         if (user.location) description.push(`**Position :** ${user.location}`);
         if (cursusId) {
             const cursus = user.cursus_users.find((c: any) => c.cursus.id === cursusId);
+            const coalition = await intraScraper.getUserCoalition(user.login, cursus.cursus.slug);
             const projects = user.projects_users.filter((p: any) => p.cursus_ids.includes(cursusId));
             const currentProjects = projects.filter((p: any) => !p.marked);
             description.push("");
@@ -87,14 +91,20 @@ export const command = async (interaction: ChatInputCommandInteraction, database
                 description.push(
                     `**Projets en cours :** ${currentProjects.map((p: any) => p.project.name).join(", ")}`
                 );
-            // TODO Show coalitions
+            if (coalition.coalitions_user) {
+                description.push(`**Coalition :** ${coalition.coalitions_user.coalition.name}`);
+                description.push(`**Points de coalition :** ${coalition.coalitions_user.score}`);
+                description.push(`**Rang :** ${coalition.coalitions_user.rank}`);
+                color = coalition.coalitions_user.coalition.color;
+            }
         }
         return {
             embeds: [
                 new EmbedBuilder()
                     .setTitle(`${user.displayname} (@${user.login})`)
-                    .setThumbnail(user.image.link)
                     .setDescription(description.join("\n"))
+                    .setThumbnail(user.image.link)
+                    .setColor(color)
             ],
             components: [
                 new ActionRowBuilder<any>().setComponents([

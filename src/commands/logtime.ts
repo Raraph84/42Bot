@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { Pool } from "mysql2/promise";
 import { getUserLink, months } from "../utils.js";
+import * as intra from "../42api.js";
 import * as intraScraper from "../42scraper.js";
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
@@ -12,7 +13,27 @@ export const command = async (interaction: ChatInputCommandInteraction, database
 
     await interaction.deferReply();
 
-    const logtime = await intraScraper.getUserLocationsStats(link.login);
+    const token = await intra.refreshOauthToken(link.refresh_token);
+    try {
+        await database.query("UPDATE linked_users SET refresh_token=? WHERE discord_user_id=?", [
+            token.refresh_token,
+            interaction.user.id
+        ]);
+    } catch (error) {
+        console.error("Database error", error);
+        interaction.editReply(":x: Un problème est survenu.");
+        return;
+    }
+
+    let user;
+    try {
+        user = await intra.getUser(token, interaction.options.getString("login") ?? link.login);
+    } catch (error) {
+        interaction.editReply(":x: Utilisateur intra 42 introuvable.");
+        return;
+    }
+
+    const logtime = await intraScraper.getUserLocationsStats(user.login);
 
     const toSeconds = (time: string): number =>
         parseInt(time.slice(0, 2)) * 60 * 60 + parseInt(time.slice(3, 5)) * 60 + parseInt(time.slice(6, 8));
@@ -45,8 +66,8 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     interaction.editReply({
         embeds: [
             new EmbedBuilder()
-                .setTitle(`Temps de connexion de ${link.login}`)
-                .setColor(0x0099ff)
+                .setTitle(`Temps de connexion de ${user.login}`)
+                .setColor(0xffffff)
                 .setDescription(
                     [
                         `:white_check_mark: **${Object.values(months)[now.getMonth() - 2]} :** ${getMonthLogtime(2)}`,

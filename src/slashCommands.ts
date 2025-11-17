@@ -1,4 +1,4 @@
-import { ApplicationCommandType, Client } from "discord.js";
+import { ApplicationCommandOptionType, ApplicationCommandType, Client } from "discord.js";
 import { Pool } from "mysql2/promise";
 
 export const run = async (bot: Client, database: Pool): Promise<void> => {
@@ -21,12 +21,28 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         {
             name: "profile",
             description: "Affiche votre profil intra 42.",
-            type: ApplicationCommandType.ChatInput
+            type: ApplicationCommandType.ChatInput,
+            options: [
+                {
+                    name: "login",
+                    description: "Le login intra 42 de l'utilisateur.",
+                    type: ApplicationCommandOptionType.String,
+                    required: false
+                }
+            ]
         },
         {
             name: "logtime",
             description: "Affiche le temps de connexion sur intra 42.",
-            type: ApplicationCommandType.ChatInput
+            type: ApplicationCommandType.ChatInput,
+            options: [
+                {
+                    name: "login",
+                    description: "Le login intra 42 de l'utilisateur.",
+                    type: ApplicationCommandOptionType.String,
+                    required: false
+                }
+            ]
         }
     ]);
 

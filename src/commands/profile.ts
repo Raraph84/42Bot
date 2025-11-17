@@ -33,7 +33,13 @@ export const command = async (interaction: ChatInputCommandInteraction, database
         return;
     }
 
-    const user = await intra.getMe(token);
+    let user;
+    try {
+        user = await intra.getUser(token, interaction.options.getString("login") ?? link.login);
+    } catch (error) {
+        interaction.editReply(":x: Utilisateur intra 42 introuvable.");
+        return;
+    }
 
     const genMessage = async (cursusId: number | null = null) => {
         const description = [
@@ -44,7 +50,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             `**Piscine :** ${months[user.pool_month]} ${user.pool_year}`,
             `**Campus :** ${user.campus.map((c: any) => c.name).join(", ")}`
         ];
-        let color = null;
+        let color = 0xffffff;
         if (user.location) description.push(`**Position :** ${user.location}`);
         if (cursusId) {
             const cursus = user.cursus_users.find((c: any) => c.cursus.id === cursusId);
@@ -105,7 +111,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     collector.on("collect", async (i) => {
         if (!i.isStringSelectMenu()) return;
         if (i.user.id !== interaction.user.id) {
-            await i.reply({ content: ":x: Ce n'est pas votre profil !", flags: MessageFlags.Ephemeral });
+            await i.reply({ content: ":x: Ce n'est pas votre commande !", flags: MessageFlags.Ephemeral });
             return;
         }
 

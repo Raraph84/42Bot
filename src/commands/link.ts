@@ -12,7 +12,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     const link = await getUserLink(database, interaction.user.id);
     if (link) {
         interaction.reply({
-            content: ":x: Votre compte Discord est déjà lié à votre intra 42 !",
+            content: ":x: Votre compte Discord est déjà lié à votre intra 42, utilisez /unlink !",
             flags: MessageFlags.Ephemeral
         });
         return;

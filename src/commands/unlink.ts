@@ -6,7 +6,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     const link = await getUserLink(database, interaction.user.id);
     if (!link) {
         interaction.reply({
-            content: ":x: Votre compte Discord n'est pas lié à votre intra 42 !",
+            content: ":x: Votre compte Discord n'est pas lié à votre intra 42, utilisez /link !",
             flags: MessageFlags.Ephemeral
         });
         return;

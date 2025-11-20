@@ -15,7 +15,7 @@ import moment from "moment";
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
     const link = await getUserLink(database, interaction.user.id);
     if (!link) {
-        interaction.reply(":x: Votre compte Discord n'est pas lié à votre intra 42 !");
+        interaction.reply(":x: Votre compte Discord n'est pas lié à votre intra 42, utilisez /link !");
         return;
     }
 

@@ -51,7 +51,7 @@ export const request = async (req: Request, res: Response, database: Pool) => {
     let user: any;
     try {
         token = await intra.getOauthToken(code, CALLBACK_URL + nonce);
-        user = await intra.getMe(token);
+        user = await intra.getMe({ token: token.token_type + " " + token.access_token });
     } catch (error) {
         res.status(500).send("Un problème est survenu.");
         return;

@@ -13,21 +13,9 @@ export const command = async (interaction: ChatInputCommandInteraction, database
 
     await interaction.deferReply();
 
-    const token = await intra.refreshOauthToken(link.refresh_token);
-    try {
-        await database.query("UPDATE linked_users SET refresh_token=? WHERE discord_user_id=?", [
-            token.refresh_token,
-            interaction.user.id
-        ]);
-    } catch (error) {
-        console.error("Database error", error);
-        interaction.editReply(":x: Un problème est survenu.");
-        return;
-    }
-
     let user;
     try {
-        user = await intra.getUser(token, interaction.options.getString("login") ?? link.login);
+        user = await intra.getUser(interaction.options.getString("login") ?? link.login, { link, database });
     } catch (error) {
         interaction.editReply(":x: Utilisateur intra 42 introuvable.");
         return;

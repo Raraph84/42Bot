@@ -110,19 +110,3 @@ const request = async (path: string, auth: AuthOptions): Promise<any> => {
 export const getMe = async (auth: AuthOptions): Promise<any> => request("/me", auth);
 
 export const getUser = async (user: string, auth: AuthOptions): Promise<any> => request("/users/" + user, auth);
-
-export const getCampuses = async (auth: AuthOptions): Promise<any> => request("/campuses", auth);
-
-const getCursusUsers = async (token: string, cursusId: number, page: number): Promise<any> => {
-    const params = new URLSearchParams();
-    params.set("sort", "-begin_at");
-    params.set("filter[campus_id]", cursusId.toString());
-    params.set("page[size]", (100).toString());
-    params.set("page[number]", page.toString());
-
-    const res = await fetch("https://api.intra.42.fr/v2/cursus/42cursus/cursus_users?" + params.toString(), {
-        headers: { Authorization: token }
-    });
-    if (!res.ok) throw new Error("42 API error: " + res.status + " " + (await res.text()));
-    return await res.json();
-};

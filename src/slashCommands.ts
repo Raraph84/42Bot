@@ -33,7 +33,7 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         },
         {
             name: "logtime",
-            description: "Affiche le temps de connexion sur intra 42.",
+            description: "Affiche le temps de connexion sur votre intra 42.",
             type: ApplicationCommandType.ChatInput,
             options: [
                 {

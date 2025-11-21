@@ -6,8 +6,29 @@ import * as intra from "./42api";
 let campuses: any[] | null = null;
 let cursuses: any[] | null = null;
 
+const formatRuleConditions = (rule: any) => {
+    const conditions: string[] = [];
+    if (rule.pool_year && !rule.pool_month) conditions.push(`Piscine ${rule.pool_year}`);
+    if (rule.pool_month && !rule.pool_year) conditions.push(`Piscine ${Object.values(months)[rule.pool_month - 1]}`);
+    if (rule.pool_month && rule.pool_year)
+        conditions.push(`Piscine ${Object.values(months)[rule.pool_month - 1]} ${rule.pool_year}`);
+    if (rule.campus_id)
+        conditions.push(`Campus ${campuses!.find((c) => c.id === rule.campus_id)?.name || rule.campus_id}`);
+    if (rule.cursus_id)
+        conditions.push(`Cursus ${cursuses!.find((c) => c.id === rule.cursus_id)?.name || rule.cursus_id}`);
+    return conditions;
+};
+
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
     const subcommand = interaction.options.getSubcommandGroup() ?? interaction.options.getSubcommand();
+
+    try {
+        if (!campuses) campuses = await intra.getCampuses({});
+        if (!cursuses) cursuses = await intra.getCursuses({});
+    } catch (error) {
+        interaction.editReply(":x: Un problème est survenu.");
+        return;
+    }
 
     if (subcommand === "show") {
         await interaction.deferReply();
@@ -28,28 +49,11 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             return;
         }
 
-        try {
-            if (!campuses) campuses = await intra.getCampuses({});
-            if (!cursuses) cursuses = await intra.getCursuses({});
-        } catch (error) {
-            interaction.editReply(":x: Un problème est survenu.");
-            return;
-        }
-
         const description = ["### Règles d'attribution de rôles :"];
         for (const rule of rules) {
-            const conditions: string[] = [];
-            if (rule.pool_year && !rule.pool_month) conditions.push(`Piscine ${rule.pool_year}`);
-            if (rule.pool_month && !rule.pool_year)
-                conditions.push(`Piscine ${Object.values(months)[rule.pool_month - 1]}`);
-            if (rule.pool_month && rule.pool_year)
-                conditions.push(`Piscine ${Object.values(months)[rule.pool_month - 1]} ${rule.pool_year}`);
-            if (rule.campus_id) conditions.push(`Campus ${campuses!.find((c) => c.id === rule.campus_id).name}`);
-            if (rule.cursus_id) conditions.push(`Cursus ${cursuses!.find((c) => c.id === rule.cursus_id).name}`);
-
-            description.push(`<@&${rule.role_id}> :`);
-            if (conditions.length) description.push(conditions.map((c) => `- ${c}`).join("\n"));
-            else description.push("- *Aucune condition*");
+            const conditions = formatRuleConditions(rule);
+            if (conditions.length) description.push(`<@&${rule.role_id}> : ${conditions.join(" + ")}`);
+            else description.push(`<@&${rule.role_id}> : *Aucune condition*`);
         }
 
         interaction.editReply({
@@ -64,6 +68,45 @@ export const command = async (interaction: ChatInputCommandInteraction, database
         const action = interaction.options.getSubcommand();
 
         if (action === "add") {
+            const role = interaction.options.getRole("role", true);
+            const poolYear = interaction.options.getNumber("poolyear");
+            const poolMonth = interaction.options.getNumber("poolmonth");
+            const campusId = interaction.options.getNumber("campus");
+            const cursusId = interaction.options.getNumber("cursus");
+
+            if (role.id === interaction.guildId) {
+                interaction.reply(":x: Vous ne pouvez pas utiliser le rôle @everyone.");
+                return;
+            }
+
+            const self = await interaction.guild!.members.fetchMe();
+            if (role.position >= self.roles.highest.position) {
+                interaction.reply(
+                    ":x: Le rôle sélectionné est au-dessus ou au même niveau que le rôle le plus élevé du bot. Veuillez placer le rôle du bot au-dessus dans les paramètres du serveur."
+                );
+                return;
+            }
+
+            try {
+                await database.query(
+                    "INSERT INTO linked_roles (guild_id, role_id, pool_year, pool_month, campus_id, cursus_id) VALUES (?, ?, ?, ?, ?, ?)",
+                    [interaction.guildId, role.id, poolYear, poolMonth, campusId, cursusId]
+                );
+            } catch (error) {
+                interaction.reply(":x: Un problème est survenu.");
+                return;
+            }
+
+            const conditions = formatRuleConditions({
+                pool_year: poolYear,
+                pool_month: poolMonth,
+                campus_id: campusId,
+                cursus_id: cursusId
+            });
+            const ruleText = conditions.length
+                ? `<@&${role.id}> : ${conditions.join(" + ")}`
+                : `<@&${role.id}> : *Aucune condition*`;
+            interaction.reply(`:white_check_mark: Règle ajoutée : ${ruleText}`);
         } else if (action === "remove") {
         }
     }

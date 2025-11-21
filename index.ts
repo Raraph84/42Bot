@@ -18,7 +18,7 @@ database
     .then(() => console.log("Connected to the database."))
     .catch((error) => console.error("Failed to connect to the database:", error));
 
-const bot = new discord.Client({ intents: [] });
+const bot = new discord.Client({ intents: [discord.GatewayIntentBits.Guilds] });
 console.log("Connecting to the bot...");
 bot.login(process.env.BOT_TOKEN)
     .then(() => console.log("Connected to the bot."))

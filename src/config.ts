@@ -112,20 +112,21 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     }
 };
 
-export const autocomplete = async (interaction: AutocompleteInteraction) => {
+export const autocomplete = async (interaction: AutocompleteInteraction, database: Pool) => {
     if (interaction.options.getSubcommandGroup() !== "rolerules") return;
+
+    try {
+        if (!campuses) campuses = await intra.getCampuses({});
+        if (!cursuses) cursuses = await intra.getCursuses({});
+    } catch (error) {
+        interaction.respond([]).catch(() => {});
+        return;
+    }
 
     const subcommand = interaction.options.getSubcommand();
     const option = interaction.options.getFocused(true);
     if (subcommand === "add" && option.name === "campus") {
-        if (!campuses) {
-            try {
-                campuses = await intra.getCampuses({});
-            } catch (error) {
-                return;
-            }
-            campuses!.sort((a, b) => a.name.localeCompare(b.name));
-        }
+        campuses!.sort((a, b) => a.name.localeCompare(b.name));
 
         const options = campuses!
             .filter((campus: any) => campus.name.toLowerCase().includes(option.value.toLowerCase()))
@@ -134,14 +135,7 @@ export const autocomplete = async (interaction: AutocompleteInteraction) => {
 
         interaction.respond(options).catch(() => {});
     } else if (subcommand === "add" && option.name === "cursus") {
-        if (!cursuses) {
-            try {
-                cursuses = await intra.getCursuses({});
-            } catch (error) {
-                return;
-            }
-            cursuses!.sort((a, b) => a.name.localeCompare(b.name));
-        }
+        cursuses!.sort((a, b) => a.name.localeCompare(b.name));
 
         const options = cursuses!
             .filter((cursus: any) => cursus.name.toLowerCase().includes(option.value.toLowerCase()))
@@ -150,6 +144,20 @@ export const autocomplete = async (interaction: AutocompleteInteraction) => {
 
         interaction.respond(options).catch(() => {});
     } else if (subcommand === "remove" && option.name === "rule") {
-        interaction.respond([]);
+        const [rules] = await database.query<RowDataPacket[]>("SELECT * FROM linked_roles WHERE guild_id=?", [
+            interaction.guildId
+        ]);
+
+        const options = rules
+            .map((rule, index) => {
+                const role = interaction.guild!.roles.cache.get(rule.role_id);
+                const conditions = formatRuleConditions(rule);
+                const name = `${role?.name ?? `Rôle ${rule.role_id}`} : ${conditions.length ? conditions.join(" + ") : "Aucune condition"}`;
+                return { name: name.length > 100 ? name.substring(0, 97) + "..." : name, value: index.toString() };
+            })
+            .filter((rule) => rule.name.toLowerCase().includes(option.value.toLowerCase()))
+            .slice(0, 25);
+
+        interaction.respond(options).catch(() => {});
     }
 };

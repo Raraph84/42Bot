@@ -150,6 +150,6 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         if (!interaction.isAutocomplete()) return;
 
         if (interaction.commandName === "config")
-            import("./config.js").then((module) => module.autocomplete(interaction));
+            import("./config.js").then((module) => module.autocomplete(interaction, database));
     });
 };

@@ -49,7 +49,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             return;
         }
 
-        const description = ["### Règles d'attribution de rôles :"];
+        const description = ["**Règles d'attribution de rôles :**"];
         for (const rule of rules) {
             const conditions = formatRuleConditions(rule);
             if (conditions.length) description.push(`<@&${rule.role_id}> : ${conditions.join(" + ")}`);
@@ -108,6 +108,30 @@ export const command = async (interaction: ChatInputCommandInteraction, database
                 : `<@&${role.id}> : *Aucune condition*`;
             interaction.reply(`:white_check_mark: Règle ajoutée : ${ruleText}`);
         } else if (action === "remove") {
+            const ruleId = interaction.options.getNumber("rule", true);
+
+            const [rules] = await database.query<RowDataPacket[]>(
+                "SELECT * FROM linked_roles WHERE guild_id=? AND rule_id=?",
+                [interaction.guildId, ruleId]
+            );
+
+            if (!rules[0]) {
+                interaction.reply(":x: Règle introuvable.");
+                return;
+            }
+
+            try {
+                await database.query("DELETE FROM linked_roles WHERE rule_id=?", [ruleId]);
+            } catch (error) {
+                interaction.reply(":x: Un problème est survenu.");
+                return;
+            }
+
+            const conditions = formatRuleConditions(rules[0]);
+            const ruleText = conditions.length
+                ? `<@&${rules[0].role_id}> : ${conditions.join(" + ")}`
+                : `<@&${rules[0].role_id}> : *Aucune condition*`;
+            interaction.reply(`:white_check_mark: Règle supprimée : ${ruleText}`);
         }
     }
 };
@@ -149,11 +173,14 @@ export const autocomplete = async (interaction: AutocompleteInteraction, databas
         ]);
 
         const options = rules
-            .map((rule, index) => {
+            .map((rule) => {
                 const role = interaction.guild!.roles.cache.get(rule.role_id);
                 const conditions = formatRuleConditions(rule);
                 const name = `${role?.name ?? `Rôle ${rule.role_id}`} : ${conditions.length ? conditions.join(" + ") : "Aucune condition"}`;
-                return { name: name.length > 100 ? name.substring(0, 97) + "..." : name, value: index.toString() };
+                return {
+                    name: name.length > 100 ? name.substring(0, 97) + "..." : name,
+                    value: rule.rule_id.toString()
+                };
             })
             .filter((rule) => rule.name.toLowerCase().includes(option.value.toLowerCase()))
             .slice(0, 25);

@@ -43,6 +43,90 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
                     required: false
                 }
             ]
+        },
+        {
+            name: "config",
+            description: "Modifie la configuration du serveur.",
+            type: ApplicationCommandType.ChatInput,
+            options: [
+                {
+                    name: "show",
+                    description: "Affiche la configuration actuelle du serveur.",
+                    type: ApplicationCommandOptionType.Subcommand
+                },
+                {
+                    name: "rolerules",
+                    description: "Configure les rôles attribué aux utilisateurs liés à 42.",
+                    type: ApplicationCommandOptionType.SubcommandGroup,
+                    options: [
+                        {
+                            name: "add",
+                            description: "Ajoute une règle de rôle.",
+                            type: ApplicationCommandOptionType.Subcommand,
+                            options: [
+                                {
+                                    name: "role",
+                                    description: "Le rôle à attribuer.",
+                                    type: ApplicationCommandOptionType.Role,
+                                    required: true
+                                },
+                                {
+                                    name: "poolyear",
+                                    description: "L'année de piscine des utilisateurs concernés.",
+                                    type: ApplicationCommandOptionType.Number
+                                },
+                                {
+                                    name: "poolmonth",
+                                    description: "Le mois de piscine des utilisateurs concernés.",
+                                    type: ApplicationCommandOptionType.Number,
+                                    choices: [
+                                        { name: "Janvier", value: 1 },
+                                        { name: "Février", value: 2 },
+                                        { name: "Mars", value: 3 },
+                                        { name: "Avril", value: 4 },
+                                        { name: "Mai", value: 5 },
+                                        { name: "Juin", value: 6 },
+                                        { name: "Juillet", value: 7 },
+                                        { name: "Août", value: 8 },
+                                        { name: "Septembre", value: 9 },
+                                        { name: "Octobre", value: 10 },
+                                        { name: "Novembre", value: 11 },
+                                        { name: "Décembre", value: 12 }
+                                    ]
+                                },
+                                {
+                                    name: "campus",
+                                    description: "Le campus des utilisateurs concernés.",
+                                    type: ApplicationCommandOptionType.Number,
+                                    autocomplete: true
+                                },
+                                {
+                                    name: "cursus",
+                                    description: "Le cursus des utilisateurs concernés.",
+                                    type: ApplicationCommandOptionType.Number,
+                                    autocomplete: true
+                                }
+                            ]
+                        },
+                        {
+                            name: "remove",
+                            description: "Supprime une règle de rôle.",
+                            type: ApplicationCommandOptionType.Subcommand,
+                            options: [
+                                {
+                                    name: "rule",
+                                    description: "La règle à supprimer.",
+                                    type: ApplicationCommandOptionType.Number,
+                                    required: true,
+                                    autocomplete: true
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            dmPermission: false,
+            defaultMemberPermissions: "Administrator"
         }
     ]);
 
@@ -58,5 +142,14 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             import("./commands/profile.js").then((module) => module.command(interaction, database));
         else if (interaction.commandName === "logtime")
             import("./commands/logtime.js").then((module) => module.command(interaction, database));
+        else if (interaction.commandName === "config")
+            import("./config.js").then((module) => module.command(interaction, database));
+    });
+
+    bot.on("interactionCreate", (interaction) => {
+        if (!interaction.isAutocomplete()) return;
+
+        if (interaction.commandName === "config")
+            import("./config.js").then((module) => module.autocomplete(interaction));
     });
 };

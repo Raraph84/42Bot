@@ -110,3 +110,7 @@ const request = async (path: string, auth: AuthOptions): Promise<any> => {
 export const getMe = async (auth: AuthOptions): Promise<any> => request("/me", auth);
 
 export const getUser = async (user: string, auth: AuthOptions): Promise<any> => request("/users/" + user, auth);
+
+export const getCampuses = async (auth: AuthOptions): Promise<any> => request("/campus?page[size]=100", auth);
+
+export const getCursuses = async (auth: AuthOptions): Promise<any> => request("/cursus?page[size]=100", auth);

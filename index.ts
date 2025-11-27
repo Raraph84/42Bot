@@ -18,7 +18,7 @@ database
     .then(() => console.log("Connected to the database."))
     .catch((error) => console.error("Failed to connect to the database:", error));
 
-const bot = new discord.Client({ intents: [discord.GatewayIntentBits.Guilds] });
+const bot = new discord.Client({ intents: [discord.GatewayIntentBits.Guilds, discord.GatewayIntentBits.GuildMembers] });
 console.log("Connecting to the bot...");
 bot.login(process.env.BOT_TOKEN)
     .then(() => console.log("Connected to the bot."))
@@ -33,6 +33,8 @@ bot.on("clientReady", async () => {
     console.log("I am in", bot.guilds.cache.size, "servers!");
 });
 
+bot.on("guildMemberAdd", (member) => link.syncMemberRoles(member, database));
+
 const api = express();
-api.get("/callback", (req, res) => link.request(req, res, database));
+api.get("/callback", (req, res) => link.request(req, res, database, bot));
 api.listen(4000, () => console.log("HTTP server listening on port 4000."));

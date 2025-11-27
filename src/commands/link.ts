@@ -1,7 +1,7 @@
-import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, Client, GuildMember } from "discord.js";
 import { Request, Response } from "express";
-import { Pool } from "mysql2/promise";
-import { getUserLink, randomString } from "../utils.js";
+import { Pool, RowDataPacket } from "mysql2/promise";
+import { getUserLink, months, randomString } from "../utils.js";
 import * as intra from "../42api.js";
 
 const CALLBACK_URL = "https://api.raraph.fr/42bot/callback?nonce=";
@@ -31,7 +31,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     });
 };
 
-export const request = async (req: Request, res: Response, database: Pool) => {
+export const request = async (req: Request, res: Response, database: Pool, bot: Client) => {
     const code = req.query.code as string;
     const nonce = req.query.nonce as string;
     if (!code || !nonce) {
@@ -69,4 +69,51 @@ export const request = async (req: Request, res: Response, database: Pool) => {
     }
 
     res.send("Votre compte Discord a bien été lié à votre intra 42 !");
+
+    for (const guild of bot.guilds.cache.values()) {
+        const member = await guild.members.fetch(link.userId).catch(() => null);
+        if (member) await syncMemberRoles(member, database);
+    }
+};
+
+export const syncMemberRoles = async (member: GuildMember, database: Pool): Promise<void> => {
+    const link = await getUserLink(database, member.id);
+
+    const [rules] = await database.query<RowDataPacket[]>("SELECT * FROM linked_roles WHERE guild_id=?", [
+        member.guild.id
+    ]);
+    if (!rules.length) return;
+
+    let userData: any = null;
+    if (link) {
+        try {
+            userData = await intra.getMe({ link, database });
+        } catch (error) {
+            console.error(`Error fetching 42 data for user ${member.id}:`, error);
+            return;
+        }
+    }
+
+    for (const rule of rules) {
+        const role = member.guild.roles.cache.get(rule.role_id);
+        if (!role) continue;
+
+        const self = await member.guild.members.fetchMe();
+        if (role.position >= self.roles.highest.position) continue;
+
+        let shouldHaveRole = false;
+        if (userData) {
+            shouldHaveRole = true;
+            if (rule.pool_year && userData.pool_year !== rule.pool_year.toString()) shouldHaveRole = false;
+            if (rule.pool_month && userData.pool_month !== Object.keys(months)[rule.pool_month - 1])
+                shouldHaveRole = false;
+            if (rule.campus_id && !userData.campus_users?.some((cu: any) => cu.campus_id === rule.campus_id))
+                shouldHaveRole = false;
+            if (rule.cursus_id && !userData.cursus_users?.some((cu: any) => cu.cursus_id === rule.cursus_id))
+                shouldHaveRole = false;
+        }
+
+        if (shouldHaveRole && !member.roles.cache.has(role.id)) await member.roles.add(role).catch(() => {});
+        else if (!shouldHaveRole && member.roles.cache.has(role.id)) await member.roles.remove(role).catch(() => {});
+    }
 };

@@ -68,8 +68,8 @@ const getPostLogin = async (prePreLogin: PrePreLogin, login: Login): Promise<Pos
 let login: Login | null = null;
 let cookies: string | null = null;
 
-const getCookies = async (): Promise<string> => {
-    if (cookies) return cookies;
+const getCookies = async (force: boolean): Promise<string> => {
+    if (cookies && !force) return cookies;
 
     const prePreLogin = await getPrePreLogin();
     const preLogin = await getPreLogin(prePreLogin);
@@ -79,11 +79,13 @@ const getCookies = async (): Promise<string> => {
     return cookies;
 };
 
-const cookiesRequest = async (url: string): Promise<Response> => {
-    const cookies = await getCookies();
+const cookiesRequest = async (url: string, retry: boolean = false): Promise<Response> => {
+    const cookies = await getCookies(retry);
     const res = await fetch(url, {
-        headers: { Cookie: cookies }
+        headers: { Cookie: cookies },
+        redirect: "manual"
     });
+    if (res.status === 302 && !retry) return await cookiesRequest(url, true);
     if (res.status !== 200) throw new Error(`Error getting ${url}: ${res.status} ${await res.text()}`);
     return res;
 };

@@ -40,8 +40,16 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             `**Piscine :** ${months[user.pool_month]} ${user.pool_year}`,
             `**Campus :** ${user.campus.map((c: any) => c.name).join(", ")}`
         ];
-        let color = 0xffffff;
+        if (user.groups.length)
+            description.push(
+                `**Groupes :** ${user.groups.map((group: any) => group.name[0].toUpperCase() + group.name.slice(1)).join(", ")}`
+            );
+        if (user.titles.length)
+            description.push(
+                `**Titres :** ${user.titles.map((title: any) => title.name.replace("%login", user.login)).join(" / ")}`
+            );
         if (user.location) description.push(`**Position :** ${user.location}`);
+        let color = 0xffffff;
         if (cursusId) {
             const cursus = user.cursus_users.find((c: any) => c.cursus.id === cursusId);
             const coalition = await intraScraper.getUserCoalition(user.login, cursus.cursus.slug);

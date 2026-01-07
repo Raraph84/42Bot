@@ -66,8 +66,8 @@ export const command = async (interaction: ChatInputCommandInteraction, database
                 .setColor(0xffffff)
                 .setDescription(
                     [
-                        `:white_check_mark: **${Object.values(months)[now.getMonth() - 2]} :** ${getMonthLogtime(2)}`,
-                        `:white_check_mark: **${Object.values(months)[now.getMonth() - 1]} :** ${getMonthLogtime(1)}`,
+                        `:white_check_mark: **${Object.values(months)[(now.getMonth() - 2 + 12) % 12]} :** ${getMonthLogtime(2)}`,
+                        `:white_check_mark: **${Object.values(months)[(now.getMonth() - 1 + 12) % 12]} :** ${getMonthLogtime(1)}`,
                         `:hourglass_flowing_sand: **${Object.values(months)[now.getMonth()]} :** ${getMonthLogtime(0)}`,
                         "",
                         `:white_check_mark: **Semaine W-2 :** ${getWeekLogtime(2)}`,

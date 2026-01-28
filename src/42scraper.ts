@@ -1,6 +1,6 @@
-type PrePreLogin = { url: URL; cookies: string[] };
+type PrePreLogin = { url: string; cookies: string[] };
 type PreLogin = { url: string; cookies: string[] };
-type Login = { url: URL; cookies: string[] };
+type Login = { url: string; cookies: string[] };
 type PostLogin = { cookies: string[] };
 
 const getPrePreLogin = async (): Promise<PrePreLogin> => {
@@ -9,7 +9,7 @@ const getPrePreLogin = async (): Promise<PrePreLogin> => {
     });
     if (res.status !== 302) throw new Error("Error pre-pre-logging in " + res.status);
 
-    const url = new URL(res.headers.get("location")!);
+    const url = res.headers.get("location")!;
     const cookies = res.headers.getSetCookie().map((entry) => entry.split(";")[0]!);
     return { url, cookies };
 };
@@ -49,7 +49,7 @@ const getLogin = async (preLogin: PreLogin): Promise<Login> => {
     });
     if (res.status !== 302) throw new Error("Error logging in " + res.status + " " + (await res.text()));
 
-    const url = new URL(res.headers.get("location")!);
+    const url = res.headers.get("location")!;
     const cookies = res.headers.getSetCookie().map((entry) => entry.split(";")[0]!);
     return { url, cookies };
 };
@@ -79,18 +79,20 @@ const getCookies = async (force: boolean): Promise<string> => {
     return cookies;
 };
 
-const cookiesRequest = async (url: string, retry: boolean = false): Promise<Response> => {
+const cookiesRequest = async (url: string, retry: boolean = false): Promise<Response & { res: string }> => {
     const cookies = await getCookies(retry);
     const res = await fetch(url, {
         headers: { Cookie: cookies },
         redirect: "manual"
     });
-    if (res.status === 302 && !retry) return await cookiesRequest(url, true);
-    if (res.status !== 200) throw new Error(`Error getting ${url}: ${res.status} ${await res.text()}`);
-    return res;
+    const text = await res.text();
+    if (text.includes("<script>document.getElementById('auto').submit()</script>") && !retry)
+        return await cookiesRequest(url, true);
+    if (res.status !== 200) throw new Error(`Error getting ${url}: ${res.status} ${text}`);
+    return { ...res, res: text };
 };
 
-const jsonCookiesRequest = (url: string): Promise<any> => cookiesRequest(url).then((res) => res.json());
+const jsonCookiesRequest = (url: string): Promise<any> => cookiesRequest(url).then((res) => JSON.parse(res.res));
 
 export const getUserCoalition = (user: string, cursus: string) =>
     jsonCookiesRequest("https://profile.intra.42.fr/users/" + user + "/coalitions?cursus=" + cursus);

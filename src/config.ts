@@ -23,8 +23,8 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     const subcommand = interaction.options.getSubcommandGroup() ?? interaction.options.getSubcommand();
 
     try {
-        if (!campuses) campuses = await intra.getCampuses({});
-        if (!cursuses) cursuses = await intra.getCursuses({});
+        if (!campuses) campuses = await intra.getCampuses();
+        if (!cursuses) cursuses = await intra.getCursuses();
     } catch (error) {
         interaction.editReply(":x: Un problème est survenu.");
         return;
@@ -140,8 +140,8 @@ export const autocomplete = async (interaction: AutocompleteInteraction, databas
     if (interaction.options.getSubcommandGroup() !== "rolerules") return;
 
     try {
-        if (!campuses) campuses = await intra.getCampuses({});
-        if (!cursuses) cursuses = await intra.getCursuses({});
+        if (!campuses) campuses = await intra.getCampuses();
+        if (!cursuses) cursuses = await intra.getCursuses();
     } catch (error) {
         interaction.respond([]).catch(() => {});
         return;

@@ -60,7 +60,7 @@ const tokenCache: { login: string | null; token: any }[] = [];
 
 type AuthOptions = { link: any; database: Pool; force?: boolean } | { token: string } | { force?: boolean };
 
-const getToken = async (auth: AuthOptions): Promise<string> => {
+const getToken = async (auth: AuthOptions = {}): Promise<string> => {
     if ("token" in auth) return auth.token;
     const login = "link" in auth ? auth.link.login : null;
 
@@ -98,19 +98,40 @@ const getToken = async (auth: AuthOptions): Promise<string> => {
     return token.token_type + " " + token.access_token;
 };
 
-const request = async (path: string, auth: AuthOptions): Promise<any> => {
+const request = async (path: string, auth?: AuthOptions): Promise<any> => {
     const res = await fetch("https://api.intra.42.fr/v2" + path, {
         headers: { Authorization: await getToken(auth) }
     });
-    if (res.status === 401 && !("token" in auth) && !auth.force) return request(path, { ...auth, force: true });
+    if (res.status === 401 && auth && !("token" in auth) && !auth.force) return request(path, { ...auth, force: true });
     if (!res.ok) throw new Error(`Error getting ${path}: ${res.status} ${await res.text()}`);
     return await res.json();
 };
 
-export const getMe = async (auth: AuthOptions): Promise<any> => request("/me", auth);
+export const getMe = async (auth?: AuthOptions): Promise<any> => request("/me", auth);
 
-export const getUser = async (user: string, auth: AuthOptions): Promise<any> => request("/users/" + user, auth);
+export const getUser = async (user: string, auth?: AuthOptions): Promise<any> => request("/users/" + user, auth);
 
-export const getCampuses = async (auth: AuthOptions): Promise<any> => request("/campus?page[size]=100", auth);
+export const getCampuses = async (auth?: AuthOptions): Promise<any> => request("/campus?page[size]=100", auth);
 
-export const getCursuses = async (auth: AuthOptions): Promise<any> => request("/cursus?page[size]=100", auth);
+export const getCursuses = async (auth?: AuthOptions): Promise<any> => request("/cursus?page[size]=100", auth);
+
+export const getLocations = async (params: URLSearchParams, auth?: AuthOptions): Promise<any[]> => {
+    params.set("page[size]", "100");
+    return request("/locations?" + params.toString(), auth);
+};
+
+export const getAllLocations = async (params: URLSearchParams, auth?: AuthOptions): Promise<any[]> => {
+    let page = 1;
+    let results: any[] = [];
+    while (true) {
+        params.set("page[number]", page.toString());
+        console.time("Fetching locations");
+        const res = await getLocations(params, auth);
+        console.timeEnd("Fetching locations");
+        console.log(`Fetched ${res.length} locations (page ${page})`);
+        results = results.concat(res);
+        if (res.length < 100) break;
+        page++;
+    }
+    return results;
+};

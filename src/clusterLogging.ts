@@ -8,8 +8,6 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         if (running) return;
         running = true;
 
-        console.time("Cluster logging cycle");
-
         let oldActiveConnections;
         try {
             [oldActiveConnections] = await database.query<ResultSetHeader[]>(
@@ -79,8 +77,6 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
                 continue;
             }
         }
-
-        console.timeEnd("Cluster logging cycle");
 
         running = false;
     }, 60 * 1000);

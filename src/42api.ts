@@ -125,10 +125,7 @@ export const getAllLocations = async (params: URLSearchParams, auth?: AuthOption
     let results: any[] = [];
     while (true) {
         params.set("page[number]", page.toString());
-        console.time("Fetching locations");
         const res = await getLocations(params, auth);
-        console.timeEnd("Fetching locations");
-        console.log(`Fetched ${res.length} locations (page ${page})`);
         results = results.concat(res);
         if (res.length < 100) break;
         page++;

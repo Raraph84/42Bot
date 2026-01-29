@@ -102,7 +102,8 @@ const request = async (path: string, auth?: AuthOptions): Promise<any> => {
     const res = await fetch("https://api.intra.42.fr/v2" + path, {
         headers: { Authorization: await getToken(auth) }
     });
-    if (res.status === 401 && auth && !("token" in auth) && !auth.force) return request(path, { ...auth, force: true });
+    if (res.status === 401 && (!auth || (!("token" in auth) && !auth.force)))
+        return request(path, { ...auth, force: true });
     if (!res.ok) throw new Error(`Error getting ${path}: ${res.status} ${await res.text()}`);
     return await res.json();
 };

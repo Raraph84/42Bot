@@ -68,7 +68,7 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         for (const connection of endedConnections) {
             try {
                 await database.query("UPDATE cluster_logs SET end_time=? WHERE log_id=?", [
-                    new Date(connection.end_at).getTime(),
+                    new Date(connection.end_at).getTime() || Date.now(),
                     connection.id
                 ]);
             } catch (error) {

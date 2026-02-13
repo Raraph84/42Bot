@@ -61,8 +61,6 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             if (cursus.grade) description.push(`**Grade :** ${cursus.grade}`);
             description.push(`**Débuté le :** ${moment(cursus.begin_at).format("DD/MM/YYYY")}`);
             if (cursus.end_at) description.push(`**Terminé le :** ${moment(cursus.end_at).format("DD/MM/YYYY")}`);
-            if (cursus.blackholed_at)
-                description.push(`**Blackhole le :** ${moment(cursus.blackholed_at).format("DD/MM/YYYY")}`);
             description.push(
                 `**Projets :** ${projects.length}`,
                 `**Projets validés :** ${projects.filter((p: any) => p["validated?"]).length}`

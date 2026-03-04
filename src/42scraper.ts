@@ -86,7 +86,8 @@ const cookiesRequest = async (url: string, retry: boolean = false): Promise<Resp
         redirect: "manual"
     });
     const text = await res.text();
-    if ((text.includes("<script>document.getElementById('auto').submit()</script>") || text.includes("Sign in to Realm for 42 students")) && !retry)
+    if (res.status === 302 && !retry) return await cookiesRequest(url, true);
+    if (text.includes("<script>document.getElementById('auto').submit()</script>") && !retry)
         return await cookiesRequest(url, true);
     if (res.status !== 200) throw new Error(`Error getting ${url}: ${res.status} ${text}`);
     return { ...res, res: text };

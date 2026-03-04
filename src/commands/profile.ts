@@ -25,9 +25,12 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     try {
         user = await intra.getUser(interaction.options.getString("login") ?? link.login, { link, database });
     } catch (error) {
-        if (error instanceof Error && error.message.includes("404"))
+        if (error instanceof Error && error.message.includes("404")) {
             interaction.editReply(":x: Utilisateur intra 42 introuvable.");
-        else interaction.editReply(":x: Un problème est survenu.");
+            return;
+        }
+        console.error(error);
+        interaction.editReply(":x: Un problème est survenu.");
         return;
     }
 
@@ -102,7 +105,15 @@ export const command = async (interaction: ChatInputCommandInteraction, database
         };
     };
 
-    const reply = await interaction.editReply(await genMessage());
+    let message;
+    try {
+        message = await genMessage();
+    } catch (error) {
+        console.error(error);
+        interaction.editReply(":x: Un problème est survenu.");
+        return;
+    }
+    const reply = await interaction.editReply(message);
     const collector = reply.createMessageComponentCollector({ time: 60000 });
     collector.on("collect", async (i) => {
         if (!i.isStringSelectMenu()) return;

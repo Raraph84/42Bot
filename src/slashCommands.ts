@@ -45,6 +45,11 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             ]
         },
         {
+            name: "lock",
+            description: "Verrouille votre session en cluster.",
+            type: ApplicationCommandType.ChatInput
+        },
+        {
             name: "delog-reminder-config",
             description: "Configure le rappel de reconnexion.",
             type: ApplicationCommandType.ChatInput,
@@ -182,6 +187,8 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             import("./commands/logtime.js").then((module) => module.command(interaction, database));
         else if (interaction.commandName === "config")
             import("./commands/config.js").then((module) => module.command(interaction, database));
+        else if (interaction.commandName === "lock")
+            import("./commands/lock.js").then((module) => module.command(interaction, database));
         else if (interaction.commandName === "delog-reminder-config")
             import("./commands/delog-reminder-config.js").then((module) => module.command(interaction, database));
     });

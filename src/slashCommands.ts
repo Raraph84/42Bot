@@ -45,6 +45,44 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             ]
         },
         {
+            name: "delog-reminder-config",
+            description: "Configure le rappel de reconnexion.",
+            type: ApplicationCommandType.ChatInput,
+            options: [
+                {
+                    name: "phonenumber",
+                    description: "Le numéro de téléphone pour les rappels (disabled pour désactiver).",
+                    type: ApplicationCommandOptionType.String,
+                    required: false
+                },
+                {
+                    name: "discordwebhook",
+                    description: "Le webhook Discord pour les rappels (disabled pour désactiver).",
+                    type: ApplicationCommandOptionType.String,
+                    required: false
+                },
+                {
+                    name: "senddm",
+                    description: "Envoyer les rappels en messages privés Discord.",
+                    type: ApplicationCommandOptionType.Boolean,
+                    required: false
+                },
+                {
+                    name: "sendlock",
+                    description: "Envoyer les rappels de verrouillage.",
+                    type: ApplicationCommandOptionType.Boolean,
+                    required: false
+                },
+                {
+                    name: "alertminutes",
+                    description:
+                        "Les minutes de rappel, séparées par des virgules. (par défaut 16,17,18,19,37,38,39,40,41)",
+                    type: ApplicationCommandOptionType.String,
+                    required: false
+                }
+            ]
+        },
+        {
             name: "config",
             description: "Modifie la configuration du serveur.",
             type: ApplicationCommandType.ChatInput,
@@ -144,6 +182,8 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
             import("./commands/logtime.js").then((module) => module.command(interaction, database));
         else if (interaction.commandName === "config")
             import("./commands/config.js").then((module) => module.command(interaction, database));
+        else if (interaction.commandName === "delog-reminder-config")
+            import("./commands/delog-reminder-config.js").then((module) => module.command(interaction, database));
     });
 
     bot.on("interactionCreate", (interaction) => {

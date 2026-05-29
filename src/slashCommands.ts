@@ -143,13 +143,13 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
         else if (interaction.commandName === "logtime")
             import("./commands/logtime.js").then((module) => module.command(interaction, database));
         else if (interaction.commandName === "config")
-            import("./config.js").then((module) => module.command(interaction, database));
+            import("./commands/config.js").then((module) => module.command(interaction, database));
     });
 
     bot.on("interactionCreate", (interaction) => {
         if (!interaction.isAutocomplete()) return;
 
         if (interaction.commandName === "config")
-            import("./config.js").then((module) => module.autocomplete(interaction, database));
+            import("./commands/config.js").then((module) => module.autocomplete(interaction, database));
     });
 };

@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { Pool, RowDataPacket } from "mysql2/promise";
-import { months } from "./utils";
-import * as intra from "./42api";
+import { months } from "../utils";
+import * as intra from "../42api";
 
 let campuses: any[] | null = null;
 let cursuses: any[] | null = null;

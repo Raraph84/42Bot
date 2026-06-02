@@ -116,7 +116,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             updates.discord_webhook ?? null,
             updates.send_dm ?? 0,
             updates.send_lock ?? 1,
-            updates.alert_minutes ?? "16,17,18,19,37,38,39,40,41",
+            updates.alert_minutes ?? "16,17,18,19,20,37,38,39,40,41",
             interaction.user.id,
             ...Object.values(updates)
         ]);

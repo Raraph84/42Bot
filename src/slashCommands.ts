@@ -81,7 +81,7 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
                 {
                     name: "alertminutes",
                     description:
-                        "Les minutes de rappel, séparées par des virgules. (par défaut 16,17,18,19,37,38,39,40,41)",
+                        "Les minutes de rappel, séparées par des virgules. (par défaut 16,17,18,19,20,37,38,39,40,41)",
                     type: ApplicationCommandOptionType.String,
                     required: false
                 }

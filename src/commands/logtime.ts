@@ -17,7 +17,12 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     try {
         user = await intra.getUser(interaction.options.getString("login") ?? link.login, { link, database });
     } catch (error) {
-        if (error instanceof Error && error.message.includes("404")) {
+        if (error instanceof Error && error.message.includes("401")) {
+            interaction.editReply(
+                ":x: Vous avez été déconnecté, veuillez vous délier puis vous relier avec `/unlink` puis `/link`."
+            );
+            return;
+        } else if (error instanceof Error && error.message.includes("404")) {
             interaction.editReply(":x: Utilisateur intra 42 introuvable.");
             return;
         }

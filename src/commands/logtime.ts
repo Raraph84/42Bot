@@ -44,7 +44,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
         parseInt(time.slice(0, 2)) * 60 * 60 + parseInt(time.slice(3, 5)) * 60 + parseInt(time.slice(6, 8));
     const toHuman = (seconds: number): string => {
         const hours = Math.floor(seconds / 60 / 60);
-        const minutes = Math.round((seconds % (60 * 60)) / 60);
+        const minutes = Math.floor((seconds % (60 * 60)) / 60);
         return `${hours}h${minutes.toString().padStart(2, "0")}m`;
     };
     const getLogtime = (start: number, end: number): number => {

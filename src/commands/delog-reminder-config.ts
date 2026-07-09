@@ -78,9 +78,9 @@ export const command = async (interaction: ChatInputCommandInteraction, database
             });
             return;
         }
-        if (clean.some((minute) => parseInt(minute) < 1 || parseInt(minute) >= 42)) {
+        if (clean.some((minute) => parseInt(minute) < 1 || parseInt(minute) > 120)) {
             interaction.reply({
-                content: ":x: Les minutes doivent être comprises entre 1 et 41 !",
+                content: ":x: Les minutes doivent être comprises entre 1 et 120 !",
                 flags: MessageFlags.Ephemeral
             });
             return;

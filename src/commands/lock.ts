@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { Pool } from "mysql2/promise";
 import { getUserLink } from "../utils.js";
+import { lockSession } from "../raraph-api.js";
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
     const link = await getUserLink(database, interaction.user.id);
@@ -10,13 +11,9 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     }
 
     try {
-        const res = await fetch(`https://api.raraph.fr/fortytwo/sessions/${link.login}/lock`, {
-            method: "POST",
-            headers: { Authorization: process.env.FORTYTWO_SESSIONS_KEY! }
-        });
-        if (!res.ok) throw new Error(`Error locking session: ${res.status} ${await res.text()}`);
-    } catch (error: any) {
-        if (error?.message.includes("No session matching this login"))
+        await lockSession(link.login);
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("No session matching this login"))
             interaction.reply(":x: Vous n'êtes pas connecté en cluster !");
         else {
             console.error(error);

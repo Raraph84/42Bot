@@ -29,7 +29,6 @@ bot.on("clientReady", async () => {
         activities: [{ name: "Regarde les echecs de Libft." }]
     });
     await (await import("./src/slashCommands.js")).run(bot, database);
-    await (await import("./src/clusterLogging.js")).run(bot, database);
     console.log("The bot is ready.");
     console.log("I am in", bot.guilds.cache.size, "servers!");
 });

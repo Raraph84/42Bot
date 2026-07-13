@@ -115,21 +115,3 @@ export const getUser = async (user: string, auth?: AuthOptions): Promise<any> =>
 export const getCampuses = async (auth?: AuthOptions): Promise<any> => request("/campus?page[size]=100", auth);
 
 export const getCursuses = async (auth?: AuthOptions): Promise<any> => request("/cursus?page[size]=100", auth);
-
-export const getLocations = async (params: URLSearchParams, auth?: AuthOptions): Promise<any[]> => {
-    params.set("page[size]", "100");
-    return request("/locations?" + params.toString(), auth);
-};
-
-export const getAllLocations = async (params: URLSearchParams, auth?: AuthOptions): Promise<any[]> => {
-    let page = 1;
-    let results: any[] = [];
-    while (true) {
-        params.set("page[number]", page.toString());
-        const res = await getLocations(params, auth);
-        results = results.concat(res);
-        if (res.length < 100) break;
-        page++;
-    }
-    return results;
-};

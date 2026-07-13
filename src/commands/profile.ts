@@ -8,8 +8,8 @@ import {
 } from "discord.js";
 import { Pool } from "mysql2/promise";
 import { getUserLink, months } from "../utils.js";
+import { getUserCoalition } from "../raraph-api.js";
 import * as intra from "../42api.js";
-import * as intraScraper from "../42scraper.js";
 import moment from "moment";
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
@@ -60,7 +60,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
         let color = 0xffffff;
         if (cursusId) {
             const cursus = user.cursus_users.find((c: any) => c.cursus.id === cursusId);
-            const coalition = await intraScraper.getUserCoalition(user.login, cursus.cursus.slug);
+            const coalition = await getUserCoalition(user.login, cursus.cursus.slug);
             const projects = user.projects_users.filter((p: any) => p.cursus_ids.includes(cursusId));
             const currentProjects = projects.filter((p: any) => !p.marked);
             description.push("");

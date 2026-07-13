@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { Pool } from "mysql2/promise";
+import { getUserLocationsStats } from "../raraph-api.js";
 import { getUserLink, months } from "../utils.js";
 import * as intra from "../42api.js";
-import * as intraScraper from "../42scraper.js";
 
 export const command = async (interaction: ChatInputCommandInteraction, database: Pool) => {
     const link = await getUserLink(database, interaction.user.id);
@@ -33,7 +33,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
 
     let logtime;
     try {
-        logtime = await intraScraper.getUserLocationsStats(user.login);
+        logtime = await getUserLocationsStats(user.login);
     } catch (error) {
         console.error(error);
         interaction.editReply(":x: Un problème est survenu.");

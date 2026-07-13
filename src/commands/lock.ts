@@ -15,6 +15,8 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     } catch (error) {
         if (error instanceof Error && error.message.includes("No session matching this login"))
             interaction.reply(":x: Vous n'êtes pas connecté en cluster !");
+        else if (error instanceof Error && error.message.includes("Session is already locked"))
+            interaction.reply(":x: Votre session est déjà verrouillée !");
         else {
             console.error(error);
             interaction.reply(":x: Un problème est survenu.");

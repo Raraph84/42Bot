@@ -2,6 +2,7 @@ import { AutocompleteInteraction, ChatInputCommandInteraction, EmbedBuilder } fr
 import { Pool, RowDataPacket } from "mysql2/promise";
 import { months } from "../utils";
 import * as intra from "../42api";
+import * as link from "./link";
 
 let campuses: any[] | null = null;
 let cursuses: any[] | null = null;
@@ -62,6 +63,37 @@ export const command = async (interaction: ChatInputCommandInteraction, database
                     .setTitle("Configuration du serveur")
                     .setDescription(description.join("\n"))
                     .setColor(0xffffff)
+            ]
+        });
+    } else if (subcommand === "syncusers") {
+        await interaction.deferReply();
+
+        const members = await interaction.guild!.members.fetch();
+        let synced = 0;
+        let errors = 0;
+
+        for (const member of members.values()) {
+            if (member.user.bot) continue;
+
+            try {
+                await link.syncMemberRoles(member, database);
+                synced++;
+            } catch (error) {
+                console.error(`Error syncing roles for member ${member.id}:`, error);
+                errors++;
+            }
+        }
+
+        interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle("Synchronisation des rôles")
+                    .setDescription(
+                        `✅ Synchronisation terminée !\n\n` +
+                            `**Membres synchronisés :** ${synced}\n` +
+                            (errors > 0 ? `**Erreurs :** ${errors}` : "")
+                    )
+                    .setColor(0x00ff00)
             ]
         });
     } else if (subcommand === "rolerules") {

@@ -98,6 +98,11 @@ export const run = async (bot: Client, database: Pool): Promise<void> => {
                     type: ApplicationCommandOptionType.Subcommand
                 },
                 {
+                    name: "syncusers",
+                    description: "Synchronise les rôles de tous les membres du serveur.",
+                    type: ApplicationCommandOptionType.Subcommand
+                },
+                {
                     name: "rolerules",
                     description: "Configure les rôles attribué aux utilisateurs liés à 42.",
                     type: ApplicationCommandOptionType.SubcommandGroup,

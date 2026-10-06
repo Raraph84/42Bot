@@ -24,7 +24,7 @@ export const command = async (interaction: ChatInputCommandInteraction, database
     const nonce = randomString(16);
     links.push({ userId: interaction.user.id, nonce });
 
-    const url = intra.getOauthUrl(CALLBACK_URL + nonce);
+    const url = await intra.getOauthUrl(CALLBACK_URL + nonce);
     interaction.reply({
         content: "Veuillez visiter le lien suivant pour lier votre compte :\n" + url,
         flags: MessageFlags.Ephemeral

@@ -1,18 +1,23 @@
 import { Pool } from "mysql2/promise";
+import { getApplicationCredentials } from "./raraph-api";
 
-export const getOauthUrl = (redirectUri: string): string => {
+export const getOauthUrl = async (redirectUri: string): Promise<string> => {
+    const { clientId } = await getApplicationCredentials();
+
     const params = new URLSearchParams();
-    params.set("client_id", process.env.INTRA_APP_UID!);
+    params.set("client_id", clientId);
     params.set("redirect_uri", redirectUri);
     params.set("response_type", "code");
     return "https://api.intra.42.fr/oauth/authorize?" + params.toString();
 };
 
 const getOauthAppToken = async (): Promise<any> => {
+    const { clientId, clientSecret } = await getApplicationCredentials();
+
     const params = new URLSearchParams();
     params.set("grant_type", "client_credentials");
-    params.set("client_id", process.env.INTRA_APP_UID!);
-    params.set("client_secret", process.env.INTRA_APP_SECRET!);
+    params.set("client_id", clientId);
+    params.set("client_secret", clientSecret);
 
     const res = await fetch("https://api.intra.42.fr/oauth/token", {
         method: "POST",
@@ -24,10 +29,12 @@ const getOauthAppToken = async (): Promise<any> => {
 };
 
 export const getOauthToken = async (code: string, redirectUri: string): Promise<any> => {
+    const { clientId, clientSecret } = await getApplicationCredentials();
+
     const params = new URLSearchParams();
     params.set("grant_type", "authorization_code");
-    params.set("client_id", process.env.INTRA_APP_UID!);
-    params.set("client_secret", process.env.INTRA_APP_SECRET!);
+    params.set("client_id", clientId);
+    params.set("client_secret", clientSecret);
     params.set("code", code);
     params.set("redirect_uri", redirectUri);
 
@@ -41,10 +48,12 @@ export const getOauthToken = async (code: string, redirectUri: string): Promise<
 };
 
 const refreshOauthToken = async (refreshToken: string): Promise<any> => {
+    const { clientId, clientSecret } = await getApplicationCredentials();
+
     const params = new URLSearchParams();
     params.set("grant_type", "refresh_token");
-    params.set("client_id", process.env.INTRA_APP_UID!);
-    params.set("client_secret", process.env.INTRA_APP_SECRET!);
+    params.set("client_id", clientId);
+    params.set("client_secret", clientSecret);
     params.set("refresh_token", refreshToken);
 
     const res = await fetch("https://api.intra.42.fr/oauth/token", {
